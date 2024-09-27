@@ -63,6 +63,61 @@ Redis是一个高性能的键值存储系统，非常适合用于分布式会话
 3.3 Java对象序列化
 Java提供了强大的对象序列化机制，允许我们将对象的状态转换为字节流，以便于存储或网络传输。
 
+创建一个可序列化的类
+import java.io.Serializable;
+
+public class Person implements Serializable {
+    private static final long serialVersionUID = 1L; // 推荐加上这个版本控制
+    private String name;
+    private int age;
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{name='" + name + "', age=" + age + "}";
+    }
+}
+序列化对象
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+
+public class SerializeDemo {
+    public static void main(String[] args) {
+        Person person = new Person("Alice", 30);
+
+        try (FileOutputStream fileOut = new FileOutputStream("person.ser");
+             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+            out.writeObject(person);
+            System.out.println("Object serialized: " + person);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+反序列化对象
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.IOException;
+
+public class DeserializeDemo {
+    public static void main(String[] args) {
+        Person person = null;
+
+        try (FileInputStream fileIn = new FileInputStream("person.ser");
+             ObjectInputStream in = new ObjectInputStream(fileIn)) {
+            person = (Person) in.readObject();
+            System.out.println("Object deserialized: " + person);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
 3.4 自定义序列化策略
 在某些情况下，我们可能需要自定义序列化策略来优化性能或增强安全性：
 性能优化：通过选择性序列化对象的特定属性，减少不必要的数据存储和传输。
