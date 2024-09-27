@@ -1,5 +1,7 @@
 会话管理与安全性指南
+
 1会话安全性
+
 1.1 会话劫持和防御
 会话劫持是指攻击者利用盗取的会话数据（通常是会话ID）冒充合法用户进行操作。
 
@@ -30,6 +32,7 @@ IP和用户代理验证：记录用户的IP和浏览器信息，对异常请求�
 双重确认机制：对重要的操作（如资金转移）要求再一次用户确认，如输入密码或发送验证码。
 
 2分布式会话管理
+
 2.1分布式环境下的会话同步问题
 在分布式系统中，用户的会话数据可能分散在多个服务节点上，这就导致了会话的同步问题。常见的挑战包括：
 
@@ -51,6 +54,7 @@ Redis是一个高性能的键值存储系统，非常适合用于分布式会话
 分布式缓存：利用Redis的集群功能，实现会话数据的分布式存储和同步，提高系统的可扩展性和可靠性。
 
 3会话状态的序列化与反序列化
+
 3.1会话状态的序列化和反序列化
 序列化是将对象转换为字节流的过程，以便可以将其存储或通过网络传输。反序列化则是将字节流重新转换为对象的过程。对于会话状态，序列化可以将包括用户信息、购物车内容等相关数据的会话对象转化为一种可存储或传输的格式。
 
@@ -62,6 +66,59 @@ Redis是一个高性能的键值存储系统，非常适合用于分布式会话
 
 3.3 Java对象序列化
 Java提供了强大的对象序列化机制，允许我们将对象的状态转换为字节流，以便于存储或网络传输。
+创建一个可序列化的类
+import java.io.Serializable;
+public class Person implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private String name;
+    private int age;
+
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Person{name='" + name + "', age=" + age + "}";
+    }
+}
+序列化对象
+import java.io.FileOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.IOException;
+
+public class SerializeDemo {
+    public static void main(String[] args) {
+        Person person = new Person("Alice", 30);
+
+        try (FileOutputStream fileOut = new FileOutputStream("person.ser");
+             ObjectOutputStream out = new ObjectOutputStream(fileOut)) {
+            out.writeObject(person);
+            System.out.println("Object serialized: " + person);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+反序列化对象
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.IOException;
+
+public class DeserializeDemo {
+    public static void main(String[] args) {
+        Person person = null;
+
+        try (FileInputStream fileIn = new FileInputStream("person.ser");
+             ObjectInputStream in = new ObjectInputStream(fileIn)) {
+            person = (Person) in.readObject();
+            System.out.println("Object deserialized: " + person);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+}
 
 3.4 自定义序列化策略
 在某些情况下，我们可能需要自定义序列化策略来优化性能或增强安全性：
